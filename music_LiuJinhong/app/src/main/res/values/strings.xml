@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">music_LiuJinhong</string>
+    <string name="listen_what_you_want">听你想听</string>
+    <string name="disclaimer_and_terms">声明和条款</string>
+    <string name="disagree">不同意</string>
+    <string name="agree">同意并使用</string>
+</resources>

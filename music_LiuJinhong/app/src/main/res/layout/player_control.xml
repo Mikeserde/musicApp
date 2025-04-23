@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingLeft="26dp"
+    android:paddingRight="26dp"
+    >
+
+    <!-- 歌曲信息 -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/song_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="到此为止"
+                android:textSize="16sp"
+                android:textColor="@color/white"
+                />
+
+            <TextView
+                android:id="@+id/singer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="徐佳莹"
+                android:textSize="12sp"
+                android:textColor="#B3FFFFFF"/>
+        </LinearLayout>
+        <ImageView
+            android:id="@+id/iv_like"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/collect"
+            />
+    </RelativeLayout>
+
+
+    <!-- 进度条 -->
+
+    <!-- 播放控制按钮 -->
+    <SeekBar
+        android:layout_marginTop="32dp"
+        android:id="@+id/seekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:thumb="@drawable/seekbar_thumb"
+        android:thumbOffset="0dp"
+        android:splitTrack="false"
+        />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/currentTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00：00"
+            android:textAppearance="@style/time"
+            android:layout_marginStart="8dp"
+            android:layout_alignParentStart="true"
+            />
+
+        <TextView
+            android:id="@+id/totalTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00：00"
+            android:textAppearance="@style/time"
+            android:layout_marginEnd="8dp"
+            android:layout_alignParentEnd="true"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="46dp"
+        >
+
+        <ImageView
+            android:id="@+id/btnMode"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:src="@drawable/ic_order"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            />
+
+        <RelativeLayout
+            android:layout_width="167dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_centerInParent="true"
+            android:layout_centerVertical="true"
+            >
+            <ImageView
+                android:id="@+id/btnPrevious"
+                android:layout_width="18dp"
+                android:layout_height="19.64dp"
+                android:src="@drawable/ic_previous"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                />
+
+            <ImageView
+                android:id="@+id/btnPlay"
+                android:layout_width="29.97dp"
+                android:layout_height="33.97dp"
+                android:layout_centerInParent="true"
+                android:background="@null"
+                />
+
+            <ImageView
+                android:id="@+id/btnNext"
+                android:layout_width="18dp"
+                android:layout_height="19.64dp"
+                android:src="@drawable/ic_next"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                />
+
+        </RelativeLayout>
+
+
+        <ImageView
+            android:id="@+id/btn_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_list"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            />
+
+    </RelativeLayout>
+
+</LinearLayout>
