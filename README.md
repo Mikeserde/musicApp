@@ -36,7 +36,7 @@
 ### 2️⃣ 克隆代码
 
 ```bash
-git clone git@partner-gitlab.mioffice.cn:nj-trainingcollege/miclassroom250224/androidgroup3/liujinhong/finalrep.git
+git clone git@github.com:Mikeserde/musicApp.git
 ```
 
 ### 3️⃣ 运行项目
