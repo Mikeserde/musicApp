@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/seekbar_minimal_thumb.xml -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true">
+        <shape android:shape="oval">
+            <solid android:color="#FFFFFFFF" /> <!-- 白色 -->
+            <size
+                android:width="12dp"
+                android:height="12dp" />
+        </shape>
+    </item>
+    <!-- 中心小圆点 -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#FFCCCCCC" /> <!-- 浅灰色 -->
+            <size
+                android:width="4dp"
+                android:height="4dp" />
+        </shape>
+    </item>
+</selector>

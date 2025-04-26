@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="12dp"
+    >
+
+    <!-- 歌曲标题 -->
+    <TextView
+        android:id="@+id/tv_song_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="到此为止"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        android:layout_alignParentStart="true"
+        />
+
+    <!-- 歌手名，放在标题下方 -->
+    <TextView
+        android:id="@+id/tv_song_artist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="- 徐佳莹"
+        android:textSize="14sp"
+        android:textColor="#99000000"
+        android:layout_below="@id/tv_song_title"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="4dp"
+        />
+
+    <!-- 右侧删除/更多按钮 -->
+    <ImageView
+        android:id="@+id/iv_remove"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
+        android:src="@drawable/remove"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        />
+</RelativeLayout>

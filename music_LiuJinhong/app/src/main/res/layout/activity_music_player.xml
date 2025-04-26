@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/darker_gray"
+    android:fitsSystemWindows="false"
+    android:clipToPadding="false"
+    >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp">
+        <!-- 返回按钮 -->
+        <ImageView
+            android:id="@+id/back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/close_player_page"
+            android:layout_alignParentEnd="true"
+            android:layout_marginRight="12dp"/>
+
+    </RelativeLayout>
+    <!-- 上半部分：ViewPager2用于切换封面和歌词 -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="580dp"
+        />
+
+    <include
+        layout="@layout/player_control"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+</LinearLayout>

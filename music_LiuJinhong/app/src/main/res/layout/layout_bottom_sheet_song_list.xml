@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    >
+
+    <!-- 标题部分 -->
+    <TextView
+        android:id="@+id/tv_sheet_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="当前播放"
+        android:textSize="18sp"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        />
+
+<!--    &lt;!&ndash; 当前播放信息 + 播放模式等 &ndash;&gt;-->
+<!--    <TextView-->
+<!--        android:id="@+id/tv_current_playing_info"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="当前播放151"-->
+<!--        android:textSize="14sp"-->
+<!--        android:textColor="@android:color/darker_gray"-->
+<!--        android:layout_marginTop="8dp"-->
+<!--        />-->
+
+    <!-- 播放模式示例：顺序播放 / 随机播放 等 -->
+    <RadioGroup
+        android:id="@+id/rg_play_mode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <RadioButton
+            android:id="@+id/rb_sequence"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="顺序播放"
+            android:checked="true" />
+
+        <RadioButton
+            android:id="@+id/rb_random"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="随机播放"
+            android:layout_marginLeft="16dp" />
+    </RadioGroup>
+
+    <!-- 分割线 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#ddd"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- 歌曲列表 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_song_list"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        tools:listitem="@layout/item_song_list"
+        />
+
+</LinearLayout>
