@@ -40,6 +40,7 @@ public class MusicService extends Service {
     // 音频焦点管理
     private AudioManager audioManager;
     private AudioManager.OnAudioFocusChangeListener audioFocusListener;
+
     //播放模式
     public enum PlaybackMode {
         LIST_LOOP,    // 列表循环（默认）
@@ -51,16 +52,84 @@ public class MusicService extends Service {
 
     public void setPlaybackMode(PlaybackMode mode) {
         this.playbackMode = mode;
+        if (playModeChangedListener != null) playModeChangedListener.onPlayModeChanged();
     }
 
     public PlaybackMode getPlaybackMode() {
         return playbackMode;
     }
 
+    public void setCurrentPosition(int position) {
+        this.currentPosition = position;
+    }
+
+    public int getCurrentPosition() {
+        return currentPosition;
+    }
+
+    public List<Music> getMusicList() {
+        return this.playList;
+    }
+
+    public int getMusicListSize() {
+        return playList.size();
+    }
+
+    public int getTotalDuration() {
+        return mediaPlayer != null ? mediaPlayer.getDuration() : 0;
+    }
+
+    public int getCurrentProgress() {
+        return mediaPlayer != null ? mediaPlayer.getCurrentPosition() : 0;
+    }
+
+    public Music getCurrentMusic() {
+        if (playList.isEmpty() || currentPosition < 0 || currentPosition >= playList.size()) {
+            return null;
+        }
+        return playList.get(currentPosition);
+    }
+
+    public MediaPlayer getMediaPlayer() {
+        return mediaPlayer;
+    }
+
+    public String getCurrentCoverUrl() {
+        Music currentMusic = getCurrentMusic();
+        return currentMusic != null ? currentMusic.getCoverUrl() : "";
+    }
 
     public class LocalBinder extends Binder {
         public MusicService getService() {
             return MusicService.this;
+        }
+    }
+
+    //去掉列表中索引指定歌曲
+    public void removeSongAt(int index) {
+        if (index < 0 || index >= playList.size()) return;
+        playList.remove(index);
+        //调整当前播放索引
+        if (index < currentPosition) {
+            currentPosition--;
+        } else if (index == currentPosition) {
+            //如果删除的是当前播放歌曲，播放下一首
+            if (playList.size() == 0) {
+                //列表为空，停止播放
+                mediaPlayer.stop();
+                currentPosition = -1;
+                //如果此时位于播放页，关闭播放页
+                if(playListEmptyListenerPlayerActivity !=null){
+                    playListEmptyListenerPlayerActivity.onPlayListEmpty();
+                }
+                //如果此时位于主界面，关闭mini播放器
+                if(playListEmptyListenerMainActivity!=null){
+                    playListEmptyListenerMainActivity.onPlayListEmpty();
+                }
+            } else {
+                currentPosition = currentPosition % playList.size();
+                playCurrent();
+            }
         }
     }
 
@@ -72,44 +141,10 @@ public class MusicService extends Service {
         initAudioFocus();
     }
 
-    // 创建极简通知渠道
-    private void createMinimalNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Background Playback",
-                    NotificationManager.IMPORTANCE_MIN // 最低优先级（无声音、不弹出）
-            );
-            channel.setShowBadge(false); // 不在应用图标显示角标
-            channel.setLockscreenVisibility(Notification.VISIBILITY_SECRET); // 隐藏锁屏内容
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(channel);
-        }
-    }
-
-    // 构建极简通知
-    private Notification buildMinimalNotification() {
-        return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("音乐播放中")
-                .setSmallIcon(R.mipmap.ic_launcher) // 必须设置有效图标
-                .setPriority(NotificationCompat.PRIORITY_MIN) // 最低优先级
-                .setVisibility(NotificationCompat.VISIBILITY_SECRET) // 隐藏敏感内容
-                .build();
-    }
-
-    // 初始化音频焦点
-    private void initAudioFocus() {
-        audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-        audioFocusListener = focusChange -> {
-            play();
-        };
-    }
-
     @Override
     public IBinder onBind(Intent intent) {
         return binder;
     }
-
 
     @SuppressLint("ForegroundServiceType")
     @Override
@@ -144,17 +179,62 @@ public class MusicService extends Service {
         return START_STICKY;
     }
 
+    @Override
+    public void onDestroy() {
+        releaseAudioFocus();
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+        super.onDestroy();
+    }
+
+
+    // 创建极简通知渠道
+    private void createMinimalNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Background Playback",
+                    NotificationManager.IMPORTANCE_MIN // 最低优先级（无声音、不弹出）
+            );
+            channel.setShowBadge(false); // 不在应用图标显示角标
+            channel.setLockscreenVisibility(Notification.VISIBILITY_SECRET); // 隐藏锁屏内容
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
+        }
+    }
+
+    // 构建极简通知
+    private Notification buildMinimalNotification() {
+        return new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("音乐播放中")
+                .setSmallIcon(R.mipmap.ic_launcher) // 必须设置有效图标
+                .setPriority(NotificationCompat.PRIORITY_MIN) // 最低优先级
+                .setVisibility(NotificationCompat.VISIBILITY_SECRET) // 隐藏敏感内容
+                .build();
+    }
+
+    // 初始化音频焦点
+    private void initAudioFocus() {
+        audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+        audioFocusListener = focusChange -> {
+            play();
+        };
+    }
+
     // 初始化播放器
     private void initMediaPlayer() {
-        Log.d(TAG,"initMediaPlayer");
+        Log.d(TAG, "initMediaPlayer");
         if (mediaPlayer == null) {
             mediaPlayer = new MediaPlayer();
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         }
     }
-    private void setOnMusicCompletionListener(){
+
+    private void setOnMusicCompletionListener() {
         mediaPlayer.setOnCompletionListener(mp -> {
-            Log.d(TAG,"OnCompletionListener触发了");
+            Log.d(TAG, "OnCompletionListener触发了");
             switch (playbackMode) {
                 case RANDOM:
                     int newPosition = currentPosition;
@@ -171,14 +251,9 @@ public class MusicService extends Service {
                     break;
                 case LIST_LOOP:
                 default:
-                    currentPosition = (currentPosition+1) % playList.size();
+                    currentPosition = (currentPosition + 1) % playList.size();
                     break;
             }
-            Log.d(TAG,"name:"+getCurrentMusic().getMusicName());
-            if(onCompleteListenerMain!=null)
-            onCompleteListenerMain.updateSongInfo();
-            if(onCompleteListenerPlayer!=null)
-            onCompleteListenerPlayer.updateSongInfo();
             playCurrent();
         });
     }
@@ -200,7 +275,6 @@ public class MusicService extends Service {
         }
     }
 
-
     // 根据歌曲 URL 播放对应歌曲
     public void playAt(String songUrl) {
         int position = -1;
@@ -219,6 +293,11 @@ public class MusicService extends Service {
         playCurrent();
     }
 
+    //根据索引播放歌曲
+    public void playAt(int position) {
+        currentPosition = position;
+        playCurrent();
+    }
 
     // 播放当前索引歌曲
     @SuppressLint("ForegroundServiceType")
@@ -241,20 +320,29 @@ public class MusicService extends Service {
                     setOnMusicCompletionListener();
                 }
 
+                //根据播放状态控制专辑圆盘旋转
                 if (playStateChangeListenerCover != null) {
                     playStateChangeListenerCover.onMusicPlay();
                 }
-
+                //根据播放状态控制活动界面播放按钮
                 if (playStateChangeListenerActivity != null) {
                     playStateChangeListenerActivity.onMusicPlay();
                 }
-
+                // 通知封面更新
                 if (coverListener != null) {
                     coverListener.onCoverChanged(getCurrentCoverUrl());
                 }
+                // 播放时通知歌词更新
+                if (lyricListener != null) lyricListener.onLyricsChanged();
+
+                // 通知歌名等信息更新
+                if (onCompleteListenerMain != null) onCompleteListenerMain.updateSongInfo();
+                if (onCompleteListenerPlayer != null) onCompleteListenerPlayer.updateSongInfo();
+
                 startPositionUpdates();
             });
         } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -299,7 +387,7 @@ public class MusicService extends Service {
         if (playStateChangeListenerCover != null) {
             playStateChangeListenerCover.onMusicPlay();
         }
-        if(lyricListener!=null) lyricListener.onLyricsChanged();
+        if (lyricListener != null) lyricListener.onLyricsChanged();
         startPositionUpdates();
     }
 
@@ -329,22 +417,22 @@ public class MusicService extends Service {
         if (playStateChangeListenerCover != null) {
             playStateChangeListenerCover.onMusicPlay();
         }
-        if(lyricListener!=null) lyricListener.onLyricsChanged();
+        if (lyricListener != null) lyricListener.onLyricsChanged();
         startPositionUpdates();
     }
 
-    public void play(){
-        if(mediaPlayer.isPlaying()){
+    public void play() {
+        if (mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
-            if(playStateChangeListenerCover != null){
+            if (playStateChangeListenerCover != null) {
                 playStateChangeListenerCover.onMusicPause();
             }
             if (playStateChangeListenerActivity != null) {
                 playStateChangeListenerActivity.onMusicPause();
             }
-        }else{
+        } else {
             mediaPlayer.start();
-            if(playStateChangeListenerCover != null){
+            if (playStateChangeListenerCover != null) {
                 playStateChangeListenerCover.onMusicPlay();
             }
             if (playStateChangeListenerActivity != null) {
@@ -353,26 +441,16 @@ public class MusicService extends Service {
         }
         startPositionUpdates();
     }
-    @Override
-    public void onDestroy() {
-        releaseAudioFocus();
-        if (mediaPlayer != null) {
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
-        super.onDestroy();
+
+    public Boolean isPlaying() {
+        return mediaPlayer != null ? mediaPlayer.isPlaying() : false;
     }
 
-    public MediaPlayer getMediaPlayer() {
-        return mediaPlayer;
-    }
-    public Boolean isPlaying(){
-        return mediaPlayer != null ? mediaPlayer.isPlaying(): false;
-    }
-    public void seekTo(int progress){
+    public void seekTo(int progress) {
         mediaPlayer.seekTo(progress);
         mediaPlayer.start();
     }
+
     public String formatTime(int milliseconds) {
         int seconds = milliseconds / 1000;
         int minutes = seconds / 60;
@@ -380,37 +458,25 @@ public class MusicService extends Service {
         return String.format("%02d:%02d", minutes, seconds);
     }
 
-    public int getTotalDuration() {
-        return mediaPlayer != null ? mediaPlayer.getDuration() : 0;
-    }
-    public int getCurrentProgress() {
-        return mediaPlayer != null ? mediaPlayer.getCurrentPosition() : 0;
-    }
-    public Music getCurrentMusic() {
-        if (playList.isEmpty() || currentPosition < 0 || currentPosition >= playList.size()) {
-            return null;
-        }
-        return playList.get(currentPosition);
-    }
-
-    public int getMusicListSize(){
-        return playList.size();
-    }
-
     // Service 中定义回调控制面板接口
     public interface OnPlaybackUpdateListener {
         void onDurationChanged(int totalDuration);
+
         void onPositionChanged(int currentPosition);
     }
+
     private OnPlaybackUpdateListener playbackListener;
+
+    //注册监听
     public void setOnPlaybackUpdateListener(OnPlaybackUpdateListener listener) {
         this.playbackListener = listener;
     }
 
-    public String getCurrentCoverUrl() {
-        Music currentMusic = getCurrentMusic();
-        return currentMusic != null ? currentMusic.getCoverUrl() : "";
+    //注销监听
+    public void removeOnPlaybackUpdateListener() {
+        this.playbackListener = null;
     }
+
 
     // 定义封面更新回调接口
     public interface OnCoverUpdateListener {
@@ -419,40 +485,53 @@ public class MusicService extends Service {
 
     private OnCoverUpdateListener coverListener;
 
+    //注册监听
     public void setOnCoverUpdateListener(OnCoverUpdateListener listener) {
         this.coverListener = listener;
     }
 
-    public interface OnPlayStateChangeListener{
+    //注销监听
+    public void removeOnCoverUpdateListener() {
+        this.coverListener = null;
+    }
+
+    public interface OnPlayStateChangeListener {
         void onMusicPlay();
+
         void onMusicPause();
     }
+
     private OnPlayStateChangeListener playStateChangeListenerCover;
 
-    public void setOnPlayStateChangeListenerCover(OnPlayStateChangeListener listener){
+    //注册监听
+    public void setOnPlayStateChangeListenerCover(OnPlayStateChangeListener listener) {
         this.playStateChangeListenerCover = listener;
+    }
+
+    //注销监听
+    public void removeOnPlayStateChangeListenerCover() {
+        this.playStateChangeListenerCover = null;
     }
 
     private OnPlayStateChangeListener playStateChangeListenerActivity;
 
-    public void playStateChangeListenerActivity(OnPlayStateChangeListener listener){
+    public void setOnPlayStateChangeListenerActivity(OnPlayStateChangeListener listener) {
         this.playStateChangeListenerActivity = listener;
     }
 
-    public List getMusicList(){
-        return this.playList;
+    public void removeOnPlayStateChangeListenerActivity() {
+        this.playStateChangeListenerActivity = null;
     }
 
-    public int getCurrentPosition(){
-        return currentPosition;
-    }
-//////////////////////////////////歌词/////////////////////////////////////
+
+    /// ///////////////////////////////歌词/////////////////////////////////////
     private LyricsSyncListener lyricListener;
     private final Object listenerLock = new Object();
 
     // 简化版同步监听接口
     public interface LyricsSyncListener {
         void onLyricsPositionChanged(long currentPosition);
+
         void onLyricsChanged();
     }
 
@@ -465,7 +544,7 @@ public class MusicService extends Service {
     }
 
     // 清除监听器
-    public void clearLyricsListener() {
+    public void removeLyricsListener() {
         synchronized (listenerLock) {
             this.lyricListener = null;
         }
@@ -486,6 +565,7 @@ public class MusicService extends Service {
             }
         }
     }
+
     private Handler positionHandler = new Handler(Looper.getMainLooper());
     private Runnable positionUpdater = new Runnable() {
         @Override
@@ -504,18 +584,67 @@ public class MusicService extends Service {
         positionHandler.post(positionUpdater);
     }
 
+    public interface IOnComplete {
+        void updateSongInfo();
+    }
+
     private IOnComplete onCompleteListenerPlayer;
-    public void setOnCompleteListenerPlayer(IOnComplete onCompleteListener){
+
+    //注册回调
+    public void setOnCompleteListenerPlayer(IOnComplete onCompleteListener) {
         this.onCompleteListenerPlayer = onCompleteListener;
     }
 
+    //注销回调
+    public void removeOnCompleteListenerPlayer() {
+        this.onCompleteListenerPlayer = null;
+    }
+
     private IOnComplete onCompleteListenerMain;
+
     public void setOnCompleteListenerMain(IOnComplete onCompleteListenerMain) {
         this.onCompleteListenerMain = onCompleteListenerMain;
     }
 
-    public interface IOnComplete{
-        void updateSongInfo();
+    //为循环模式创建回调接口，以便更新UI
+    public interface OnPlayModeChangedListener {
+        void onPlayModeChanged();
+    }
+
+    //注册监听
+    private OnPlayModeChangedListener playModeChangedListener;
+
+    public void setOnPlayModeChangedListener(OnPlayModeChangedListener listener) {
+        this.playModeChangedListener = listener;
+    }
+
+    public void removeOnPlayModeChangedListener() {
+        this.playModeChangedListener = null;
+    }
+
+    //监听列表中是否为空以关闭播放页
+    public interface OnPlayListEmptyListener {
+        void onPlayListEmpty();
+    }
+
+    private OnPlayListEmptyListener playListEmptyListenerPlayerActivity;
+
+    public void setOnPlayListEmptyListenerPlayerActivity(OnPlayListEmptyListener listener) {
+        this.playListEmptyListenerPlayerActivity = listener;
+    }
+
+    public void removeOnPlayListEmptyListenerPlayerActivity() {
+        this.playListEmptyListenerPlayerActivity = null;
+    }
+
+    private OnPlayListEmptyListener playListEmptyListenerMainActivity;
+
+    public void setOnPlayListEmptyListenerMainActivity(OnPlayListEmptyListener listener) {
+        this.playListEmptyListenerMainActivity = listener;
+    }
+
+    public void removeOnPlayListEmptyListenerMainActivity() {
+        this.playListEmptyListenerMainActivity = null;
     }
 
 }

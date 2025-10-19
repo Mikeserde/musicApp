@@ -1,5 +1,6 @@
 package com.example.music_liujinhong.home;
 
+import android.provider.CalendarContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,11 @@ import java.util.List;
 
 public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHolder> {
 
+    private int currentPlayingIndex = -1;
+    public void setCurrentPlayingIndex(int currentSongIndex) {
+        currentPlayingIndex = currentSongIndex;
+    }
+
     public interface OnItemClickListener {
         void onItemClick(int position);
         void onRemoveClick(int position);
@@ -22,6 +28,10 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
 
     private List<Music> songList;
     private OnItemClickListener listener;
+
+    public void setSongList(List<Music> songList) {
+        this.songList = songList;
+    }
 
     public SongListAdapter(List<Music> songList, OnItemClickListener listener) {
         this.songList = songList;
@@ -40,8 +50,17 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Music music = songList.get(position);
         holder.tvSongTitle.setText(music.getMusicName());
-        holder.tvSongArtist.setText("- " + music.getAuthor());
-
+        holder.tvSongArtist.setText(" · " + music.getAuthor());
+        if(currentPlayingIndex != -1 && position == currentPlayingIndex){
+            holder.tvSongTitle.setTextColor(0xFF3325CD);
+            holder.tvSongArtist.setTextColor(0xFF3325CD);
+            holder.itemView.setBackgroundColor(0xFFF7F7F7);
+        }else{
+            // 恢复默认颜色
+            holder.tvSongTitle.setTextColor(0xFF000000);
+            holder.tvSongArtist.setTextColor(0xFF888888);
+            holder.itemView.setBackgroundColor(0xFFFFFFFF);
+        }
         // 点击整行，回调给外部
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {

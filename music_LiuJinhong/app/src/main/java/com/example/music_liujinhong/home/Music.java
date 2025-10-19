@@ -93,7 +93,8 @@ public class Music implements Parcelable {
     }
 
     public Boolean getLike() {
-        return like;
+        // 默认未喜欢，避免空指针
+        return like != null ? like : Boolean.FALSE;
     }
 
     public void setLike(Boolean like) {

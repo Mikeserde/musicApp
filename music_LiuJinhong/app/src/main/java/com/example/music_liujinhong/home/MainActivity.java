@@ -13,12 +13,9 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,7 +41,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity implements MultiTypeAdapter.OnItemClickListener, MusicService.IOnComplete {
+public class MainActivity extends AppCompatActivity implements MultiTypeAdapter.OnItemClickListener, MusicService.IOnComplete, MusicService.OnPlayListEmptyListener {
     private Handler mHandler = new Handler();
 
     private static ArrayList<Item> items = new ArrayList<>();
@@ -108,8 +105,9 @@ public class MainActivity extends AppCompatActivity implements MultiTypeAdapter.
         ivList.setOnClickListener(v -> {
             // 假设从 MusicService 获取播放列表
             List<Music> songList = musicService.getMusicList();
+
             // 创建 BottomSheetDialogFragment
-            SongListBottomSheet bottomSheet = new SongListBottomSheet(songList);
+            SongListBottomSheet bottomSheet = new SongListBottomSheet();
             bottomSheet.show(getSupportFragmentManager(), "SongListBottomSheet");
         });
 
@@ -135,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements MultiTypeAdapter.
             updateMiniPlayer();
             initSeekbar();
             musicService.setOnCompleteListenerMain(MainActivity.this);
-
+            musicService.setOnPlayListEmptyListenerPlayerActivity(MainActivity.this);
             // 设置播放状态回调
             musicService.setOnPlayStateChangeListenerCover(new MusicService.OnPlayStateChangeListener() {
                 @Override
@@ -192,8 +190,6 @@ public class MainActivity extends AppCompatActivity implements MultiTypeAdapter.
      * 更新悬浮控制栏状态
      */
     private void updateMiniPlayer() {
-        // 始终显示 miniPlayer
-        miniPlayer.setVisibility(View.VISIBLE);
         if (musicService != null && musicService.getCurrentMusic() != null) {
             Music current = musicService.getCurrentMusic();
             tvTitle.setText(current.getMusicName());
@@ -203,11 +199,10 @@ public class MainActivity extends AppCompatActivity implements MultiTypeAdapter.
                  .load(current.getCoverUrl())
                     .apply(options)
                         .into(ivCover);
+            showMiniPlayer();
         } else {
-            // 如果没有当前歌曲，可以设置一个默认状态
-            tvTitle.setText("暂无播放歌曲");
-            tvArtist.setText("");
-            ivCover.setImageResource(R.mipmap.ic_launcher);
+            // 如果没有当前歌曲，隐藏miniPlayer
+            hideMiniPlayer();
         }
         updatePlayButton();
     }
@@ -360,6 +355,9 @@ public class MainActivity extends AppCompatActivity implements MultiTypeAdapter.
         }
         ongoingCalls.clear();
         if(isBound){
+            musicService.removeOnPlaybackUpdateListener();
+            musicService.removeOnPlayStateChangeListenerCover();
+            musicService.removeOnPlayListEmptyListenerMainActivity();
             unbindService(serviceConnection);
             isBound = false;
         }
@@ -471,6 +469,11 @@ public class MainActivity extends AppCompatActivity implements MultiTypeAdapter.
      * 更新悬浮框状态的对外接口
      */
     public void updateSongInfo(){
+        updateMiniPlayer();
+    }
+
+    @Override
+    public void onPlayListEmpty() {
         updateMiniPlayer();
     }
 }

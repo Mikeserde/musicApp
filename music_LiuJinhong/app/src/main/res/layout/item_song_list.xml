@@ -3,7 +3,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="12dp"
+    android:layout_marginBottom="20dp"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:orientation="horizontal"
     >
 
     <!-- 歌曲标题 -->
@@ -15,6 +18,7 @@
         android:textColor="@android:color/black"
         android:textSize="16sp"
         android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
         />
 
     <!-- 歌手名，放在标题下方 -->
@@ -22,12 +26,13 @@
         android:id="@+id/tv_song_artist"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="- 徐佳莹"
-        android:textSize="14sp"
+        android:text="· 徐佳莹"
+        android:textSize="12sp"
         android:textColor="#99000000"
-        android:layout_below="@id/tv_song_title"
-        android:layout_alignParentStart="true"
+        android:layout_toRightOf="@id/tv_song_title"
         android:layout_marginTop="4dp"
+        android:layout_centerVertical="true"
+
         />
 
     <!-- 右侧删除/更多按钮 -->

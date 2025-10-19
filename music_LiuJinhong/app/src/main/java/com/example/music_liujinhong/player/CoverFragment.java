@@ -150,7 +150,7 @@ public class CoverFragment extends Fragment implements MusicService.OnCoverUpdat
     @Override
     public void onDestroy() {
         if (musicService != null) {
-            musicService.setOnCoverUpdateListener(null);
+            musicService.removeOnCoverUpdateListener();
         }
         super.onDestroy();
     }

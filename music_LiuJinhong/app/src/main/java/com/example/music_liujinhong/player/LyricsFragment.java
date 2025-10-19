@@ -78,7 +78,7 @@ public class LyricsFragment extends Fragment implements MusicService.LyricsSyncL
         // 解绑服务并清理资源
         if (isBound && getActivity() != null) {
             if (musicService != null) {
-                musicService.clearLyricsListener();
+                musicService.removeLyricsListener();
             }
             getActivity().unbindService(connection);
             isBound = false;

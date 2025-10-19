@@ -1,72 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp"
-    >
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:orientation="vertical">
 
-    <!-- 标题部分 -->
-    <TextView
-        android:id="@+id/tv_sheet_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="当前播放"
-        android:textSize="18sp"
-        android:textColor="@android:color/black"
-        android:textStyle="bold"
-        />
-
-<!--    &lt;!&ndash; 当前播放信息 + 播放模式等 &ndash;&gt;-->
-<!--    <TextView-->
-<!--        android:id="@+id/tv_current_playing_info"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="当前播放151"-->
-<!--        android:textSize="14sp"-->
-<!--        android:textColor="@android:color/darker_gray"-->
-<!--        android:layout_marginTop="8dp"-->
-<!--        />-->
-
-    <!-- 播放模式示例：顺序播放 / 随机播放 等 -->
-    <RadioGroup
-        android:id="@+id/rg_play_mode"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="8dp">
-
-        <RadioButton
-            android:id="@+id/rb_sequence"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="顺序播放"
-            android:checked="true" />
-
-        <RadioButton
-            android:id="@+id/rb_random"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="随机播放"
-            android:layout_marginLeft="16dp" />
-    </RadioGroup>
-
-    <!-- 分割线 -->
+    <!-- 顶部拖动条 -->
     <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#ddd"
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="24dp"
+        android:background="@drawable/bg_drag_handle" />
+
+    <!-- 标题区域 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:gravity="bottom"
+        android:orientation="horizontal"
+        android:paddingStart="24dp">
+
+        <TextView
+            android:id="@+id/tv_sheet_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="当前播放"
+            android:textColor="@android:color/black"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/tv_sheet_title_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="151"
+            android:textColor="@android:color/black"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <!-- 使用 LinearLayout -->
+    <LinearLayout
+        android:id="@+id/ll_play_mode"
+        android:layout_marginStart="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/btn_order_mode_bg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="14dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="4dp">
+
+        <!-- 循环图标 -->
+        <ImageView
+            android:id="@+id/iv_play_mode"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/ic_order_black" />
+
+        <!-- 文字 -->
+        <TextView
+            android:id="@+id/tv_play_mode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="顺序模式"
+            android:textColor="#99000000"
+
+            android:textSize="13sp"
+            android:textStyle="normal" />
+
+    </LinearLayout>
+
 
     <!-- 歌曲列表 -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_song_list"
         android:layout_width="match_parent"
-        android:layout_height="400dp"
-        tools:listitem="@layout/item_song_list"
-        />
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_weight="1"
+        tools:listitem="@layout/item_song_list" />
 
 </LinearLayout>
