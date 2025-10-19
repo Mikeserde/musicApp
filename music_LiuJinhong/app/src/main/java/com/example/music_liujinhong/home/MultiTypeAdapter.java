@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.chad.library.adapter.base.BaseMultiItemQuickAdapter;
@@ -22,10 +23,11 @@ import com.youth.banner.Banner;
 import com.youth.banner.adapter.BannerImageAdapter;
 import com.youth.banner.holder.BannerImageHolder;
 import com.youth.banner.indicator.CircleIndicator;
+
 import java.util.ArrayList;
 
 
-public class MultiTypeAdapter extends BaseMultiItemQuickAdapter<Item, BaseViewHolder>implements LoadMoreModule,CardAdapter.OnCardClickListener {
+public class MultiTypeAdapter extends BaseMultiItemQuickAdapter<Item, BaseViewHolder> implements LoadMoreModule, CardAdapter.OnCardClickListener {
     public interface ItemType {
         int BANNER = 1;
         int CARD = 2;
@@ -38,6 +40,9 @@ public class MultiTypeAdapter extends BaseMultiItemQuickAdapter<Item, BaseViewHo
     // 定义接口
     public interface OnItemClickListener {
         void onItemClick(Item item, int position);
+
+        // 新增：添加到播放列表回调
+        void onAddClick(Music music);
     }
 
     // 设置监听器
@@ -48,6 +53,11 @@ public class MultiTypeAdapter extends BaseMultiItemQuickAdapter<Item, BaseViewHo
     @Override
     public void onCardClick(Item item, int position) {
         listener.onItemClick(item, position);
+    }
+
+    @Override
+    public void onAddClick(Music music) {
+        this.listener.onAddClick(music);
     }
 
     public MultiTypeAdapter(@Nullable ArrayList<Item> data) {
@@ -62,16 +72,16 @@ public class MultiTypeAdapter extends BaseMultiItemQuickAdapter<Item, BaseViewHo
     protected void convert(@NonNull BaseViewHolder holder, Item item) {
         switch (holder.getItemViewType()) {
             case ItemType.BANNER:
-                bindBanner(holder,item);
+                bindBanner(holder, item);
                 break;
             case ItemType.CARD:
-                bindCard(holder,item);
+                bindCard(holder, item);
                 break;
             case ItemType.SINGLE:
-                bindSingle(holder,item);
+                bindSingle(holder, item);
                 break;
             case ItemType.DOUBLE:
-                bindDouble(holder,item);
+                bindDouble(holder, item);
                 break;
         }
     }
@@ -86,7 +96,7 @@ public class MultiTypeAdapter extends BaseMultiItemQuickAdapter<Item, BaseViewHo
                 .into(imageView1);
 
         imageView1.setOnClickListener(v -> {
-                listener.onItemClick(item, 0);
+            listener.onItemClick(item, 0);
         });
 
         TextView songText1 = view.findViewById(R.id.double_item_song1);
@@ -96,7 +106,10 @@ public class MultiTypeAdapter extends BaseMultiItemQuickAdapter<Item, BaseViewHo
         singerText1.setText(item.getMusicList().get(0).getAuthor());
         ImageView add_btn1 = view.findViewById(R.id.double_item_add1);
         add_btn1.setOnClickListener(v -> {
-            Toast.makeText(getContext(), String.format("将%s添加到音乐列表",item.getMusicList().get(0).getMusicName()), Toast.LENGTH_SHORT).show();
+            if (listener != null) {
+                listener.onAddClick(item.getMusicList().get(0));
+            }
+            Toast.makeText(getContext(), String.format("将%s添加到音乐列表", item.getMusicList().get(0).getMusicName()), Toast.LENGTH_SHORT).show();
         });
 
 
@@ -122,7 +135,10 @@ public class MultiTypeAdapter extends BaseMultiItemQuickAdapter<Item, BaseViewHo
 
         ImageView add_btn2 = view.findViewById(R.id.double_item_add2);
         add_btn2.setOnClickListener(v -> {
-            Toast.makeText(getContext(), String.format("将%s添加到音乐列表",item.getMusicList().get(1).getMusicName()), Toast.LENGTH_SHORT).show();
+            if (listener != null) {
+                listener.onAddClick(item.getMusicList().get(1));
+            }
+            Toast.makeText(getContext(), String.format("将%s添加到音乐列表", item.getMusicList().get(1).getMusicName()), Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -150,14 +166,11 @@ public class MultiTypeAdapter extends BaseMultiItemQuickAdapter<Item, BaseViewHo
         View view = holder.getView(R.id.banner_item);
         Banner banner = view.findViewById(R.id.banner);
         Context context = view.getContext();
-        ImageView add_btn = view.findViewById(R.id.banner_add_music);
+
         // 设置 Banner 适配器
         banner.setAdapter(new BannerImageAdapter<Music>(item.getMusicList()) {
                     @Override
                     public void onBindView(BannerImageHolder holder, Music music, int position, int size) {
-                        add_btn.setOnClickListener(v -> {
-                            Toast.makeText(getContext(), String.format("将%s添加到音乐列表",music.getMusicName()), Toast.LENGTH_SHORT).show();
-                        });
                         // 数据绑定
                         holder.imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                         Glide.with(holder.imageView.getContext())
@@ -170,6 +183,19 @@ public class MultiTypeAdapter extends BaseMultiItemQuickAdapter<Item, BaseViewHo
                     }
                 }).addBannerLifecycleObserver((LifecycleOwner) context)
                 .setIndicator(new CircleIndicator(view.getContext()));
+        // 为“加号”绑定点击，使用当前页索引取对应歌曲
+        ImageView addBtn = view.findViewById(R.id.banner_add_music);
+        addBtn.setOnClickListener(v -> {
+            int current = banner.getCurrentItem();
+            int realIndex = com.youth.banner.util.BannerUtils.getRealPosition(true,current, item.getMusicList().size());
+            if (realIndex >= 0 && realIndex < item.getMusicList().size()) {
+                Music target = item.getMusicList().get(realIndex);
+                if (listener != null) {
+                    listener.onAddClick(target);
+                }
+                Toast.makeText(getContext(), String.format("将%s添加到音乐列表", target.getMusicName()), Toast.LENGTH_SHORT).show();
+            }
+        });
         // 开始轮播
         banner.start();
     }
@@ -182,7 +208,7 @@ public class MultiTypeAdapter extends BaseMultiItemQuickAdapter<Item, BaseViewHo
                 .transform(new CenterCrop())
                 .into(imageView);
 
-        imageView.setOnClickListener(v->{
+        imageView.setOnClickListener(v -> {
             listener.onItemClick(item, 0);
         });
 
@@ -197,7 +223,10 @@ public class MultiTypeAdapter extends BaseMultiItemQuickAdapter<Item, BaseViewHo
 
         ImageView add_btn = view.findViewById(R.id.single_item_add);
         add_btn.setOnClickListener(v -> {
-            Toast.makeText(getContext(), String.format("将%s添加到音乐列表",item.getMusicList().get(0).getMusicName()), Toast.LENGTH_SHORT).show();
+            if (listener != null) {
+                listener.onAddClick(item.getMusicList().get(0));
+            }
+            Toast.makeText(getContext(), String.format("将%s添加到音乐列表", item.getMusicList().get(0).getMusicName()), Toast.LENGTH_SHORT).show();
         });
     }
 }

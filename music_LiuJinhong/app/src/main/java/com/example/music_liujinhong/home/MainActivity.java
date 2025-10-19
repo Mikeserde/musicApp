@@ -382,6 +382,18 @@ public class MainActivity extends AppCompatActivity implements MultiTypeAdapter.
         proceedToPlayer(item, position);
     }
 
+    // 新增：实现添加到播放列表的回调
+    @Override
+    public void onAddClick(Music music) {
+        if (musicService != null) {
+            ArrayList<Music> single = new ArrayList<>();
+            single.add(music);
+            musicService.setPlayList(single);
+        } else {
+            Toast.makeText(this, "音乐服务未连接，稍后重试", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

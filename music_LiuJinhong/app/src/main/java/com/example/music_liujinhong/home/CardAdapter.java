@@ -29,6 +29,8 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
     // 定义接口
     public interface OnCardClickListener {
         void onCardClick(Item item, int position);
+        // 新增：添加到播放列表回调
+        void onAddClick(Music music);
     }
 
     // 设置监听器
@@ -59,6 +61,9 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
 
         ImageView add_btn = holder.itemView.findViewById(R.id.card_item_add_music);
         add_btn.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onAddClick(music);
+            }
             Toast.makeText(holder.itemView.getContext(), String.format("将%s添加到音乐列表",music.getMusicName()), Toast.LENGTH_SHORT).show();
         });
     }
